@@ -457,6 +457,12 @@ Tk_DeleteSelHandler(tkwin, selection, target)
  *--------------------------------------------------------------
  */
 
+static char* clr(void) {
+  char* val = getenv("TKTRACE");
+  if (!val) val = "36";
+  return val;
+}
+
 void
 Tk_OwnSelection(tkwin, selection, proc, clientData)
     Tk_Window tkwin;            /* Window to become new selection
@@ -473,7 +479,6 @@ Tk_OwnSelection(tkwin, selection, proc, clientData)
     Tk_LostSelProc *clearProc = NULL;
     ClientData clearData = NULL;        /* Initialization needed only to
 					 * prevent compiler warning. */
-
 
     if (dispPtr->multipleAtom == None) {
 	TkSelInit(tkwin);
@@ -544,6 +549,8 @@ Tk_OwnSelection(tkwin, selection, proc, clientData)
 
     XSetSelectionOwner(winPtr->display, infoPtr->selection, winPtr->window,
 	    infoPtr->time);
+    fprintf(stderr, "\x1b[%smTk_OwnSelection(selection=Atom%d, time=%d)\x1b[00m\n",
+            clr(), (int)selection, infoPtr->time);
 
     /*
      * Now that we are done, we can invoke clearProc without running into
@@ -552,6 +559,8 @@ Tk_OwnSelection(tkwin, selection, proc, clientData)
 
     if (clearProc != NULL) {
 	(*clearProc)(clearData);
+        fprintf(stderr, "  \x1b[%smTk_OwnSelection:  clearProc for old\x1b[00m\n",
+                clr());
     }
 }
 

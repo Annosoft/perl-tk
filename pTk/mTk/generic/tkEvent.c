@@ -1196,8 +1196,8 @@ TkCurrentTime(dispPtr, fallbackCurrent)
                     clr(), eventPtr->xproperty.time);
 	    return eventPtr->xproperty.time;
 	}
-        fprintf(stderr, "  \x1b[%smevent type %d won't do\x1b[00m\n",
-                clr(), eventPtr->type);
+        fprintf(stderr, "  \x1b[%smevent type=%d serial=%d won't do\x1b[00m\n",
+                clr(), eventPtr->type, eventPtr->xany.serial);
 	pending = pending->nextPtr;
     }
     fprintf(stderr, "  \x1b[%smNo suitable event.  Last=%d, returning %d\x1b[00m\n",
