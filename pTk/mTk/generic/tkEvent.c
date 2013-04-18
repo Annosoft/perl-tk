@@ -1301,6 +1301,63 @@ Tk_CollapseMotionEvents(display, collapse)
  *----------------------------------------------------------------------
  */
 
+Time
+x11_time(eventPtr)
+     XEvent *eventPtr;
+{
+  switch (eventPtr->type) {
+  case KeyPress:
+  case KeyRelease:
+    return eventPtr->xkey.time;
+  case ButtonPress:
+  case ButtonRelease:
+    return eventPtr->xbutton.time;
+  case MotionNotify:
+    return eventPtr->xmotion.time;
+  case EnterNotify:
+  case LeaveNotify:
+    return eventPtr->xcrossing.time;
+
+  case FocusIn:
+  case FocusOut:
+  case KeymapNotify:
+  case Expose:
+  case GraphicsExpose:
+  case NoExpose:
+  case VisibilityNotify:
+  case CreateNotify:
+  case DestroyNotify:
+  case UnmapNotify:
+  case MapNotify:
+  case MapRequest:
+  case ReparentNotify:
+  case ConfigureNotify:
+  case ConfigureRequest:
+  case GravityNotify:
+  case ResizeRequest:
+  case CirculateNotify:
+  case CirculateRequest:
+
+  case ColormapNotify:
+  case ClientMessage:
+  case MappingNotify:
+    return -1; /* no time on these events */
+
+  case PropertyNotify:
+    return eventPtr->xproperty.time;
+
+  case SelectionClear:
+    return eventPtr->xselectionclear.time;
+  case SelectionRequest:
+    return eventPtr->xselectionrequest.time;
+  case SelectionNotify:
+    return eventPtr->xselection.time;
+  }
+
+  fprintf(stderr, "   can't get time from event type %d\n", eventPtr->type);
+  return -2;
+}
+
 void
 Tk_QueueWindowEvent(eventPtr, position)
     XEvent *eventPtr;			/* Event to add to queue.  This
@@ -1336,8 +1393,10 @@ Tk_QueueWindowEvent(eventPtr, position)
 	wevPtr->header.proc = WindowEventProc;
 	wevPtr->event = *eventPtr;
 	Tcl_QueueEvent(&wevPtr->header, position);
-        fprintf(stderr, "\x1b[%smTk_QueueEvent: new tcl event for XEvent(0x%X) type=%d\x1b[00m\n",
-                clr(), (int)wevPtr, wevPtr->event.type);
+        fprintf(stderr, "\x1b[%smTk_QueueEvent: new tcl event for XEvent(0x%X) type=%d serial=%d time=%d (collapsing motion events)\x1b[00m\n",
+                clr(), (int)wevPtr, wevPtr->event.type,
+                eventPtr->xany.serial,
+                x11_time(eventPtr));
 	return;
     }
 
@@ -1401,8 +1460,10 @@ Tk_QueueWindowEvent(eventPtr, position)
 	Tcl_DoWhenIdle(DelayedMotionProc, (ClientData) dispPtr);
     } else {
 	Tcl_QueueProcEvent(WindowEventProc, &wevPtr->header, position);
-        fprintf(stderr, "\x1b[%smTk_QueueWindowEvent: new WindowEventProc for XEvent(0x%X) type=%d\x1b[00m\n",
-                clr(), (int)wevPtr, wevPtr->event.type);
+        fprintf(stderr, "\x1b[%smTk_QueueWindowEvent: new WindowEventProc for XEvent(0x%X) type=%d serial=%d time=%d\x1b[00m\n",
+                clr(), (int)wevPtr, wevPtr->event.type,
+                eventPtr->xany.serial,
+                x11_time(eventPtr));
     }
 
 }
