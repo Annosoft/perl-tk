@@ -19,3 +19,13 @@
 /PNG/libpng/libpng12.pc
 /PNG/libpng/libtool
 /PNG/libpng/stamp-h1
+
+# extra
+/blib/
+*.o
+*.bs
+*.a
+\#*\#
+.\#*
+*~
+pm_to_blib
