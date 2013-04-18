@@ -310,6 +310,8 @@ static char* clr(void) {
   return val;
 }
 
+extern Time x11_time(XEvent *eventPtr); /* hacked into pTk/mTk/generic/tkEvent.c */
+
 static void
 TransferXEventsToTcl(
     Display *display)
@@ -325,8 +327,8 @@ TransferXEventsToTcl(
 
     while (QLength(display) > 0) {
 	XNextEvent(display, &event);
-        fprintf(stderr, "\x1b[%smX11 event came in, type=%d\t%s\x1b[00m\n",
-                clr(), event.type,
+        fprintf(stderr, "\x1b[%smnew XEvent: type=%d serial=%d time=%d\t%s\x1b[00m\n",
+                clr(), event.type, event.xany.serial, x11_time(&event),
                 (event.type == SelectionClear ? "SelectionClear" :
                  (event.type == SelectionRequest ? "SelectionRequest" :
                   (event.type == SelectionNotify ? "SelectionNotify" :
