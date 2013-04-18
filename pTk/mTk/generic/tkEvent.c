@@ -1150,6 +1150,12 @@ TkEventDeadWindow(winPtr)
  *----------------------------------------------------------------------
  */
 
+static char* clr(void) {
+  char* val = getenv("TKTRACE");
+  if (!val) val = "36";
+  return val;
+}
+
 Time
 TkCurrentTime(dispPtr, fallbackCurrent)
     TkDisplay *dispPtr;		/* Display for which the time is desired. */
@@ -1160,25 +1166,44 @@ TkCurrentTime(dispPtr, fallbackCurrent)
     InProgress *pending;
 
     pending = tsdPtr->pendingPtr;
+    fprintf(stderr, "\x1b[%smTkCurrentTime: fallbackCurrent=%d, start at pendingPtr=0x%X of tsdPtr=%X\x1b[00m\n",
+            clr(), fallbackCurrent, pending, tsdPtr);
+
     while (pending != NULL) {
 	eventPtr = pending->eventPtr;
 	switch (eventPtr->type) {
 	case ButtonPress:
 	case ButtonRelease:
+            fprintf(stderr, "  \x1b[%smButtonFoo -> %d\x1b[00m\n",
+                    clr(), eventPtr->xbutton.time);
 	    return eventPtr->xbutton.time;
 	case KeyPress:
 	case KeyRelease:
+            fprintf(stderr, "  \x1b[%smKeyFoo -> %d\x1b[00m\n",
+                    clr(), eventPtr->xkey.time);
 	    return eventPtr->xkey.time;
 	case MotionNotify:
+            fprintf(stderr, "  \x1b[%smMotionNotify -> %d\x1b[00m\n",
+                    clr(), eventPtr->xmotion.time);
 	    return eventPtr->xmotion.time;
 	case EnterNotify:
 	case LeaveNotify:
+            fprintf(stderr, "  \x1b[%smEnter/Leave -> %d\x1b[00m\n",
+                    clr(), eventPtr->xcrossing.time);
 	    return eventPtr->xcrossing.time;
 	case PropertyNotify:
+            fprintf(stderr, "  \x1b[%smPropertyNotify -> %d\x1b[00m\n",
+                    clr(), eventPtr->xproperty.time);
 	    return eventPtr->xproperty.time;
 	}
+        fprintf(stderr, "  \x1b[%smevent type %d won't do\x1b[00m\n",
+                clr(), eventPtr->type);
 	pending = pending->nextPtr;
     }
+    fprintf(stderr, "  \x1b[%smNo suitable event.  Last=%d, returning %d\x1b[00m\n",
+            clr(), dispPtr->lastEventTime,
+            (fallbackCurrent) ? CurrentTime : dispPtr->lastEventTime);
+
     return (fallbackCurrent) ? CurrentTime : dispPtr->lastEventTime;
 }
 
