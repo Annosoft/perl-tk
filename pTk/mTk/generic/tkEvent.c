@@ -1336,6 +1336,8 @@ Tk_QueueWindowEvent(eventPtr, position)
 	wevPtr->header.proc = WindowEventProc;
 	wevPtr->event = *eventPtr;
 	Tcl_QueueEvent(&wevPtr->header, position);
+        fprintf(stderr, "\x1b[%smTk_QueueEvent: new tcl event for XEvent(0x%X) type=%d\x1b[00m\n",
+                clr(), (int)wevPtr, wevPtr->event.type);
 	return;
     }
 
@@ -1399,7 +1401,10 @@ Tk_QueueWindowEvent(eventPtr, position)
 	Tcl_DoWhenIdle(DelayedMotionProc, (ClientData) dispPtr);
     } else {
 	Tcl_QueueProcEvent(WindowEventProc, &wevPtr->header, position);
+        fprintf(stderr, "\x1b[%smTk_QueueWindowEvent: new WindowEventProc for XEvent(0x%X) type=%d\x1b[00m\n",
+                clr(), (int)wevPtr, wevPtr->event.type);
     }
+
 }
 
 /*
@@ -1474,8 +1479,8 @@ WindowEventProc(evPtr, flags)
     if (!(flags & TCL_WINDOW_EVENTS)) {
 	return 0;
     }
-    fprintf(stderr, "\x1b[%smWindowEventProc: about to handle XEvent type=%d with restrictProc=0x%X\x1b[00m\n",
-            clr(),
+    fprintf(stderr, "\x1b[%smWindowEventProc: about to handle XEvent(0x%X) type=%d with restrictProc=0x%X\x1b[00m\n",
+            clr(), (int)wevPtr,
             wevPtr->event.type, tsdPtr->restrictProc);
     if (tsdPtr->restrictProc != NULL) {
 	result = (*tsdPtr->restrictProc)(tsdPtr->restrictArg, &wevPtr->event);
