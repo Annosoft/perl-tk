@@ -129,6 +129,12 @@ static int              HandleCompat _ANSI_ARGS_((ClientData clientData,
  *----------------------------------------------------------------------
  */
 
+static char* clr(void) {
+  char* val = getenv("TKTRACE");
+  if (!val) val = "36";
+  return val;
+}
+
 int
 TkSelGetSelection(interp, tkwin, selection, target, proc, clientData)
     Tcl_Interp *interp;         /* Interpreter to use for reporting
@@ -146,6 +152,7 @@ TkSelGetSelection(interp, tkwin, selection, target, proc, clientData)
     TkSelRetrievalInfo retr;
     TkWindow *winPtr = (TkWindow *) tkwin;
     TkDisplay *dispPtr = winPtr->dispPtr;
+    Time time;
 
     /*
      * The selection is owned by some other process.  To
@@ -186,9 +193,12 @@ TkSelGetSelection(interp, tkwin, selection, target, proc, clientData)
      * NI-S Believes that X ICCCM rules say we must use an event time
      * and such a rejection is valid - try it and see.
      */
-
+    time = TkCurrentTime(dispPtr,1);
     XConvertSelection(winPtr->display, retr.selection, retr.target,
-	    retr.property, retr.winPtr->window, TkCurrentTime(dispPtr,1));
+	    retr.property, retr.winPtr->window, time);
+
+    fprintf(stderr, "\x1b[%smTkSelGetSelection(selection=Atom%d, time=%d): fetching external\x1b[00m\n",
+            clr(), (int)selection, time);
 
     /*
      * Enter a loop processing X events until the selection
@@ -202,6 +212,8 @@ TkSelGetSelection(interp, tkwin, selection, target, proc, clientData)
 	Tcl_DoOneEvent(0);
     }
     Tcl_DeleteTimerHandler(retr.timeout);
+    fprintf(stderr, "\x1b[%smTkSelGetSelection(selection=Atom%d): done\x1b[00m\n",
+            clr(), (int)selection);
 
     /*
      * Unregister the information about the selection retrieval

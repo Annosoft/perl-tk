@@ -596,6 +596,7 @@ Tk_ClearSelection(tkwin, selection)
     Tk_LostSelProc *clearProc = NULL;
     ClientData clearData = NULL;        /* Initialization needed only to
 					 * prevent compiler warning. */
+    Time time;
 
     if (dispPtr->multipleAtom == None) {
 	TkSelInit(tkwin);
@@ -620,12 +621,18 @@ Tk_ClearSelection(tkwin, selection)
 	clearData = infoPtr->clearData;
 	ckfree((char *) infoPtr);
     }
+
+    time = TkCurrentTime(dispPtr,True);
     XSetSelectionOwner(winPtr->display, selection, None,
                        /* Fallback to CurrentTime */
-                       TkCurrentTime(dispPtr,True));
+                       time);
+    fprintf(stderr, "\x1b[%smTk_ClearSelection(selection=Atom%d, time=%d)\x1b[00m\n",
+            clr(), (int)selection, time);
 
     if (clearProc != NULL) {
 	(*clearProc)(clearData);
+        fprintf(stderr, "  \x1b[%smTk_ClearSelection:  clearProc for old\x1b[00m\n",
+                clr());
     }
 }
 
@@ -715,6 +722,8 @@ Tk_GetXSelection(interp, tkwin, selection, target, proc, clientData)
 	long buffer[TK_SEL_WORDS_AT_ONCE+1];
 	TkSelInProgress ip;
 
+        fprintf(stderr, "\x1b[%smTk_GetXSelection(selection=Atom%d): fetching internal\x1b[00m\n",
+                clr(), (int)selection);
 	for (selPtr = ((TkWindow *) infoPtr->owner)->selHandlerList;
 	     selPtr != NULL; selPtr = selPtr->nextPtr) {
 	    if  ((selPtr->target == target)
