@@ -1474,8 +1474,16 @@ WindowEventProc(evPtr, flags)
     if (!(flags & TCL_WINDOW_EVENTS)) {
 	return 0;
     }
+    fprintf(stderr, "\x1b[%smWindowEventProc: about to handle XEvent type=%d with restrictProc=0x%X\x1b[00m\n",
+            clr(),
+            wevPtr->event.type, tsdPtr->restrictProc);
     if (tsdPtr->restrictProc != NULL) {
 	result = (*tsdPtr->restrictProc)(tsdPtr->restrictArg, &wevPtr->event);
+        fprintf(stderr, "   \x1b[%sm...result=%d\t%s\x1b[00m\n",
+                clr(), result,
+                (result == TK_PROCESS_EVENT ? "TK_PROCESS_EVENT" :
+                 (result == TK_DEFER_EVENT ? "TK_DEFER_EVENT" :
+                  (result == TK_DISCARD_EVENT ? "TK_DISCARD_EVENT" : "???"))));
 	if (result != TK_PROCESS_EVENT) {
 	    if (result == TK_DEFER_EVENT) {
 		/* TK_DEFER_EVENT */
