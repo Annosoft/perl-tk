@@ -304,6 +304,12 @@ DisplaySetupProc(clientData, flags)
  *----------------------------------------------------------------------
  */
 
+static char* clr(void) {
+  char* val = getenv("TKTRACE");
+  if (!val) val = "36";
+  return val;
+}
+
 static void
 TransferXEventsToTcl(
     Display *display)
@@ -319,8 +325,16 @@ TransferXEventsToTcl(
 
     while (QLength(display) > 0) {
 	XNextEvent(display, &event);
+        fprintf(stderr, "\x1b[%smX11 event came in, type=%d\t%s\x1b[00m\n",
+                clr(), event.type,
+                (event.type == SelectionClear ? "SelectionClear" :
+                 (event.type == SelectionRequest ? "SelectionRequest" :
+                  (event.type == SelectionNotify ? "SelectionNotify" :
+                   "other")))
+                );
 	if (event.type != KeyPress && event.type != KeyRelease) {
 	    if (XFilterEvent(&event, None)) {
+              fprintf(stderr, "   \x1b[%smXFilterEvent dropped it\x1b[00m\n", clr());
 		continue;
 	    }
 	}
