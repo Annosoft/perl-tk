@@ -533,7 +533,7 @@ Tk_OwnSelection(tkwin, selection, proc, clientData)
      * will return CurrentTime anyway.
      */
 
-    infoPtr->time = TkCurrentTime(dispPtr,True);
+    infoPtr->time = CurrentTime; /* bodge, because we have been using too-old timestamps and our ownership has been rejected */
 
     /*
      * Note that we are not checking to see if the selection claim succeeded.
