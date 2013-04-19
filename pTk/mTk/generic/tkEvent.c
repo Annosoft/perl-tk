@@ -1540,17 +1540,16 @@ WindowEventProc(evPtr, flags)
     if (!(flags & TCL_WINDOW_EVENTS)) {
 	return 0;
     }
-    fprintf(stderr, "\x1b[%smWindowEventProc: about to handle XEvent(0x%X) type=%d with restrictProc=0x%X\x1b[00m\n",
-            clr(), (int)wevPtr,
-            wevPtr->event.type, tsdPtr->restrictProc);
     if (tsdPtr->restrictProc != NULL) {
 	result = (*tsdPtr->restrictProc)(tsdPtr->restrictArg, &wevPtr->event);
-        fprintf(stderr, "   \x1b[%sm...result=%d\t%s\x1b[00m\n",
-                clr(), result,
-                (result == TK_PROCESS_EVENT ? "TK_PROCESS_EVENT" :
-                 (result == TK_DEFER_EVENT ? "TK_DEFER_EVENT" :
-                  (result == TK_DISCARD_EVENT ? "TK_DISCARD_EVENT" : "???"))));
 	if (result != TK_PROCESS_EVENT) {
+          fprintf(stderr, "\x1b[%smWindowEventProc: %s XEvent(0x%X) type=%d by restrictProc=0x%X\x1b[00m\n",
+                  clr(),
+                  (result == TK_PROCESS_EVENT ? "TK_PROCESS_EVENT" :
+                   (result == TK_DEFER_EVENT ? "TK_DEFER_EVENT" :
+                    (result == TK_DISCARD_EVENT ? "TK_DISCARD_EVENT" : "???"))),
+                  (int)wevPtr,
+                  wevPtr->event.type, tsdPtr->restrictProc);
 	    if (result == TK_DEFER_EVENT) {
 		/* TK_DEFER_EVENT */
 		/* WARNING - Beware this happening to SelectionNotify events
@@ -1570,6 +1569,9 @@ WindowEventProc(evPtr, flags)
 	    }
 	}
     }
+    fprintf(stderr, "\x1b[%smWindowEventProc: handle XEvent(0x%X) type=%d with restrictProc=0x%X\x1b[00m\n",
+            clr(), (int)wevPtr,
+            wevPtr->event.type, tsdPtr->restrictProc);
     Tk_HandleEvent(&wevPtr->event);
     return 1;
 }
