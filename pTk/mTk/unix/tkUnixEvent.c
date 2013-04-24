@@ -327,7 +327,7 @@ TransferXEventsToTcl(
 
     while (QLength(display) > 0) {
 	XNextEvent(display, &event);
-        fprintf(stderr, "\x1b[%smnew XEvent: type=%d serial=%d time=%d\t%s\x1b[00m\n",
+        fprintf(stderr, "\x1b[%smnew XEvent: type=%d serial=%d time=%u\t%s\x1b[00m\n",
                 clr(), event.type, event.xany.serial, x11_time(&event),
                 (event.type == SelectionClear ? "SelectionClear" :
                  (event.type == SelectionRequest ? "SelectionRequest" :

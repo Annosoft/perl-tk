@@ -549,7 +549,7 @@ Tk_OwnSelection(tkwin, selection, proc, clientData)
 
     XSetSelectionOwner(winPtr->display, infoPtr->selection, winPtr->window,
 	    infoPtr->time);
-    fprintf(stderr, "\x1b[%smTk_OwnSelection(selection=Atom%d, time=%d)\x1b[00m\n",
+    fprintf(stderr, "\x1b[%smTk_OwnSelection(selection=Atom%d, time=%u)\x1b[00m\n",
             clr(), (int)selection, infoPtr->time);
 
     /*
@@ -626,7 +626,7 @@ Tk_ClearSelection(tkwin, selection)
     XSetSelectionOwner(winPtr->display, selection, None,
                        /* Fallback to CurrentTime */
                        time);
-    fprintf(stderr, "\x1b[%smTk_ClearSelection(selection=Atom%d, time=%d)\x1b[00m\n",
+    fprintf(stderr, "\x1b[%smTk_ClearSelection(selection=Atom%d, time=%u)\x1b[00m\n",
             clr(), (int)selection, time);
 
     if (clearProc != NULL) {

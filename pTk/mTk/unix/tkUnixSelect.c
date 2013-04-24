@@ -197,7 +197,7 @@ TkSelGetSelection(interp, tkwin, selection, target, proc, clientData)
     XConvertSelection(winPtr->display, retr.selection, retr.target,
 	    retr.property, retr.winPtr->window, time);
 
-    fprintf(stderr, "\x1b[%smTkSelGetSelection(selection=Atom%d, time=%d): fetching external\x1b[00m\n",
+    fprintf(stderr, "\x1b[%smTkSelGetSelection(selection=Atom%d, time=%u): fetching external\x1b[00m\n",
             clr(), (int)selection, time);
 
     /*

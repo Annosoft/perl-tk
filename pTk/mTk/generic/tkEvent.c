@@ -1166,7 +1166,7 @@ TkCurrentTime(dispPtr, fallbackCurrent)
     InProgress *pending;
 
     pending = tsdPtr->pendingPtr;
-    fprintf(stderr, "\x1b[%smTkCurrentTime: fallbackCurrent=%d, start at pendingPtr=0x%X of tsdPtr=%X\x1b[00m\n",
+    fprintf(stderr, "\x1b[%smTkCurrentTime: fallbackCurrent=%u, start at pendingPtr=0x%X of tsdPtr=%X\x1b[00m\n",
             clr(), fallbackCurrent, pending, tsdPtr);
 
     while (pending != NULL) {
@@ -1174,25 +1174,25 @@ TkCurrentTime(dispPtr, fallbackCurrent)
 	switch (eventPtr->type) {
 	case ButtonPress:
 	case ButtonRelease:
-            fprintf(stderr, "  \x1b[%smButtonFoo -> %d\x1b[00m\n",
+            fprintf(stderr, "  \x1b[%smButtonFoo -> %u\x1b[00m\n",
                     clr(), eventPtr->xbutton.time);
 	    return eventPtr->xbutton.time;
 	case KeyPress:
 	case KeyRelease:
-            fprintf(stderr, "  \x1b[%smKeyFoo -> %d\x1b[00m\n",
+            fprintf(stderr, "  \x1b[%smKeyFoo -> %u\x1b[00m\n",
                     clr(), eventPtr->xkey.time);
 	    return eventPtr->xkey.time;
 	case MotionNotify:
-            fprintf(stderr, "  \x1b[%smMotionNotify -> %d\x1b[00m\n",
+            fprintf(stderr, "  \x1b[%smMotionNotify -> %u\x1b[00m\n",
                     clr(), eventPtr->xmotion.time);
 	    return eventPtr->xmotion.time;
 	case EnterNotify:
 	case LeaveNotify:
-            fprintf(stderr, "  \x1b[%smEnter/Leave -> %d\x1b[00m\n",
+            fprintf(stderr, "  \x1b[%smEnter/Leave -> %u\x1b[00m\n",
                     clr(), eventPtr->xcrossing.time);
 	    return eventPtr->xcrossing.time;
 	case PropertyNotify:
-            fprintf(stderr, "  \x1b[%smPropertyNotify -> %d\x1b[00m\n",
+            fprintf(stderr, "  \x1b[%smPropertyNotify -> %u\x1b[00m\n",
                     clr(), eventPtr->xproperty.time);
 	    return eventPtr->xproperty.time;
 	}
@@ -1200,7 +1200,7 @@ TkCurrentTime(dispPtr, fallbackCurrent)
                 clr(), eventPtr->type, eventPtr->xany.serial);
 	pending = pending->nextPtr;
     }
-    fprintf(stderr, "  \x1b[%smNo suitable event.  Last=%d, returning %d\x1b[00m\n",
+    fprintf(stderr, "  \x1b[%smNo suitable event.  Last=%u, returning %u\x1b[00m\n",
             clr(), dispPtr->lastEventTime,
             (fallbackCurrent) ? CurrentTime : dispPtr->lastEventTime);
 
@@ -1393,7 +1393,7 @@ Tk_QueueWindowEvent(eventPtr, position)
 	wevPtr->header.proc = WindowEventProc;
 	wevPtr->event = *eventPtr;
 	Tcl_QueueEvent(&wevPtr->header, position);
-        fprintf(stderr, "\x1b[%smTk_QueueEvent: new tcl event for XEvent(0x%X) type=%d serial=%d time=%d (collapsing motion events)\x1b[00m\n",
+        fprintf(stderr, "\x1b[%smTk_QueueEvent: new tcl event for XEvent(0x%X) type=%d serial=%d time=%u (collapsing motion events)\x1b[00m\n",
                 clr(), (int)wevPtr, wevPtr->event.type,
                 eventPtr->xany.serial,
                 x11_time(eventPtr));
@@ -1460,10 +1460,11 @@ Tk_QueueWindowEvent(eventPtr, position)
 	Tcl_DoWhenIdle(DelayedMotionProc, (ClientData) dispPtr);
     } else {
 	Tcl_QueueProcEvent(WindowEventProc, &wevPtr->header, position);
-        fprintf(stderr, "\x1b[%smTk_QueueWindowEvent: new WindowEventProc for XEvent(0x%X) type=%d serial=%d time=%d\x1b[00m\n",
+        fprintf(stderr, "\x1b[%smTk_QueueWindowEvent: new WindowEventProc for XEvent(0x%X) type=%d serial=%d time=%u send_event=%d\x1b[00m\n",
                 clr(), (int)wevPtr, wevPtr->event.type,
                 eventPtr->xany.serial,
-                x11_time(eventPtr));
+                x11_time(eventPtr),
+                eventPtr->xany.send_event);
     }
 
 }
