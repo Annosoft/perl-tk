@@ -1465,6 +1465,16 @@ Tk_QueueWindowEvent(eventPtr, position)
                 eventPtr->xany.serial,
                 x11_time(eventPtr),
                 eventPtr->xany.send_event);
+        switch (wevPtr->event.type) {
+        case KeyPress:
+        case KeyRelease:
+          fprintf(stderr, "  \x1b[%smKey%sEvent window=0x%X root=0x%X subwindow=0x%X (x,y)=(%d,%d) (x,y)_root=(%d,%d) state=0x%X keycode=%u same_screen=%d\x1b[00m\n", clr(),
+                  wevPtr->event.type == KeyPress ? "Pressed" : "Released",
+                  eventPtr->xkey.window, eventPtr->xkey.root, eventPtr->xkey.subwindow,
+                  eventPtr->xkey.x, eventPtr->xkey.y, eventPtr->xkey.x_root, eventPtr->xkey.y_root,
+                  eventPtr->xkey.state, eventPtr->xkey.keycode, eventPtr->xkey.same_screen);
+          break;
+        }
     }
 
 }
