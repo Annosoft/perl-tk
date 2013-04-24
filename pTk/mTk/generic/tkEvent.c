@@ -1358,6 +1358,49 @@ x11_time(eventPtr)
   return -2;
 }
 
+const char*
+x11_type(eventType)
+     int eventType;
+{
+  switch (eventType) {
+  case KeyPress:          return "KeyPress";
+  case KeyRelease:        return "KeyRelease";
+  case ButtonPress:       return "ButtonPress";
+  case ButtonRelease:     return "ButtonRelease";
+  case MotionNotify:      return "MotionNotify";
+  case EnterNotify:       return "EnterNotify";
+  case LeaveNotify:       return "LeaveNotify";
+  case FocusIn:           return "FocusIn";
+  case FocusOut:          return "FocusOut";
+  case KeymapNotify:      return "KeymapNotify";
+  case Expose:            return "Expose";
+  case GraphicsExpose:    return "GraphicsExpose";
+  case NoExpose:          return "NoExpose";
+  case VisibilityNotify:  return "VisibilityNotify";
+  case CreateNotify:      return "CreateNotify";
+  case DestroyNotify:     return "DestroyNotify";
+  case UnmapNotify:       return "UnmapNotify";
+  case MapNotify:         return "MapNotify";
+  case MapRequest:        return "MapRequest";
+  case ReparentNotify:    return "ReparentNotify";
+  case ConfigureNotify:   return "ConfigureNotify";
+  case ConfigureRequest:  return "ConfigureRequest";
+  case GravityNotify:     return "GravityNotify";
+  case ResizeRequest:     return "ResizeRequest";
+  case CirculateNotify:   return "CirculateNotify";
+  case CirculateRequest:  return "CirculateRequest";
+  case PropertyNotify:    return "PropertyNotify";
+  case SelectionClear:    return "SelectionClear";
+  case SelectionRequest:  return "SelectionRequest";
+  case SelectionNotify:   return "SelectionNotify";
+  case ColormapNotify:    return "ColormapNotify";
+  case ClientMessage:     return "ClientMessage";
+  case MappingNotify:     return "MappingNotify";
+  case GenericEvent:      return "GenericEvent";
+  }
+  return "??";
+}
+
 void
 Tk_QueueWindowEvent(eventPtr, position)
     XEvent *eventPtr;			/* Event to add to queue.  This
@@ -1393,8 +1436,8 @@ Tk_QueueWindowEvent(eventPtr, position)
 	wevPtr->header.proc = WindowEventProc;
 	wevPtr->event = *eventPtr;
 	Tcl_QueueEvent(&wevPtr->header, position);
-        fprintf(stderr, "\x1b[%smTk_QueueEvent: new tcl event for XEvent(0x%X) type=%d serial=%d time=%u (collapsing motion events)\x1b[00m\n",
-                clr(), (int)wevPtr, wevPtr->event.type,
+        fprintf(stderr, "  \x1b[%smTk_QueueEvent: new tcl event for XEvent(0x%X) type=%d (%s) serial=%d time=%u (collapsing motion events)\x1b[00m\n",
+                clr(), (int)wevPtr, eventPtr->type, x11_type(eventPtr->type),
                 eventPtr->xany.serial,
                 x11_time(eventPtr));
 	return;
@@ -1460,15 +1503,15 @@ Tk_QueueWindowEvent(eventPtr, position)
 	Tcl_DoWhenIdle(DelayedMotionProc, (ClientData) dispPtr);
     } else {
 	Tcl_QueueProcEvent(WindowEventProc, &wevPtr->header, position);
-        fprintf(stderr, "\x1b[%smTk_QueueWindowEvent: new WindowEventProc for XEvent(0x%X) type=%d serial=%d time=%u send_event=%d\x1b[00m\n",
-                clr(), (int)wevPtr, wevPtr->event.type,
+        fprintf(stderr, "  \x1b[%smTk_QueueWindowEvent: new WindowEventProc for XEvent(0x%X) type=%d (%s) serial=%d time=%u send_event=0x%x\x1b[00m\n",
+                clr(), (int)wevPtr, eventPtr->type, x11_type(eventPtr->type),
                 eventPtr->xany.serial,
                 x11_time(eventPtr),
                 eventPtr->xany.send_event);
         switch (wevPtr->event.type) {
         case KeyPress:
         case KeyRelease:
-          fprintf(stderr, "  \x1b[%smKey%sEvent window=0x%X root=0x%X subwindow=0x%X (x,y)=(%d,%d) (x,y)_root=(%d,%d) state=0x%X keycode=%u same_screen=%d\x1b[00m\n", clr(),
+          fprintf(stderr, "    \x1b[%smKey%sEvent window=0x%X root=0x%X subwindow=0x%X (x,y)=(%d,%d) (x,y)_root=(%d,%d) state=0x%X keycode=%u same_screen=%d\x1b[00m\n", clr(),
                   wevPtr->event.type == KeyPress ? "Pressed" : "Released",
                   eventPtr->xkey.window, eventPtr->xkey.root, eventPtr->xkey.subwindow,
                   eventPtr->xkey.x, eventPtr->xkey.y, eventPtr->xkey.x_root, eventPtr->xkey.y_root,
