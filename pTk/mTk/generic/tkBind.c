@@ -784,6 +784,12 @@ static void		DoWarp _ANSI_ARGS_((ClientData clientData));
  *---------------------------------------------------------------------------
  */
 
+static char* clr(void) {
+  char* val = getenv("TKTRACE");
+  if (!val) val = "36";
+  return val;
+}
+
 void
 TkBindInit(mainPtr)
     TkMainInfo *mainPtr;	/* The newly created application. */
@@ -3824,6 +3830,9 @@ HandleEventGenerate(interp, mainWin, objc, objv)
 
     name = Tcl_GetStringFromObj(objv[1], NULL);
 
+    fprintf(stderr, "\x1b[%smHandleEventGenerate: %s for windowName=%s; mainWin=%x, tkwin=%x\x1b[00m\n",
+            clr(), name, windowName, mainWin, tkwin);
+
     p = name;
     eventMask = 0;
     count = ParseEventDescription(interp, &p, &pat, &eventMask);
@@ -3847,8 +3856,12 @@ HandleEventGenerate(interp, mainWin, objc, objv)
     event.xany.send_event = False;
     if (windowName[0]) {
 	event.xany.window = Tk_WindowId(tkwin);
+        fprintf(stderr, "  \x1b[%smfor tkwin=%x => event.xany.window=%x\x1b[00m\n",
+                clr(), tkwin, event.xany.window);
     } else {
 	event.xany.window = RootWindow(Tk_Display(tkwin), Tk_ScreenNumber(tkwin));
+        fprintf(stderr, "  \x1b[%smfor RootWindow => event.xany.window=%x\x1b[00m\n",
+                clr(), event.xany.window);
     }
     event.xany.display = Tk_Display(tkwin);
 
