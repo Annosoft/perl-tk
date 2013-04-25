@@ -552,6 +552,12 @@ static void		WmUpdateGeom _ANSI_ARGS_((WmInfo *wmPtr,
  *--------------------------------------------------------------
  */
 
+static char* clr(void) {
+  char* val = getenv("TKTRACE");
+  if (!val) val = "36";
+  return val;
+}
+
 static void
 TkWmFreeCmd(wmPtr)
 WmInfo *wmPtr;
@@ -735,6 +741,8 @@ TkWmMapWindow(
     register WmInfo *wmPtr = winPtr->wmInfoPtr;
     XTextProperty textProp;
 
+    fprintf(stderr, "\x1b[%smTkWmMapWindow: asked to map top-level winPtr=0x%x\x1b[00m\n",
+            clr(), winPtr);
     if (wmPtr->flags & WM_NEVER_MAPPED) {
 	Tcl_DString ds;
 
@@ -847,6 +855,8 @@ REMOVED <<<<
     if (wmPtr->hints.initial_state == NormalState) {
 	WaitForMapNotify(winPtr, 1);
     }
+    fprintf(stderr, "\x1b[%smTkWmMapWindow done for winPtr=0x%x via wrapper XID=%x\x1b[00m\n",
+            clr(), winPtr, wmPtr->wrapperPtr->window);
 }
 
 /*
