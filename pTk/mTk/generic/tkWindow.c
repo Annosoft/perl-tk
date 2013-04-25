@@ -260,6 +260,12 @@ static void		UnlinkWindow _ANSI_ARGS_((TkWindow *winPtr));
  *----------------------------------------------------------------------
  */
 
+static char* clr(void) {
+  char* val = getenv("TKTRACE");
+  if (!val) val = "36";
+  return val;
+}
+
 static void
 TkCloseDisplay(TkDisplay *dispPtr)
 {
@@ -1729,12 +1735,16 @@ Tk_MakeWindowExist(tkwin)
     int new;
 
     if (winPtr->window != None) {
+        fprintf(stderr, "\x1b[%smTk_MakeWindowExist: tkwin=%x exists already\x1b[00m\n", clr(), tkwin);
 	return;
     }
 
     if ((winPtr->parentPtr == NULL) || (winPtr->flags & TK_TOP_HIERARCHY)) {
 	parent = XRootWindow(winPtr->display, winPtr->screenNum);
+        fprintf(stderr, "\x1b[%smTk_MakeWindowExist: tkwin=%x is child of root window\x1b[00m\n", clr(), tkwin);
     } else {
+        fprintf(stderr, "\x1b[%smTk_MakeWindowExist: tkwin=%x requires its parent (%x)\x1b[00m\n",
+                clr(), tkwin, winPtr->parentPtr);
 	if (winPtr->parentPtr->window == None) {
 	    Tk_MakeWindowExist((Tk_Window) winPtr->parentPtr);
 	}
@@ -1743,8 +1753,10 @@ Tk_MakeWindowExist(tkwin)
 
     createProc = Tk_GetClassProc(winPtr->classProcsPtr, createProc);
     if (createProc != NULL) {
+        fprintf(stderr, "  \x1b[%smcreateProc=%x\x1b[00m\n", clr(), createProc);
 	winPtr->window = (*createProc)(tkwin, parent, winPtr->instanceData);
     } else {
+        fprintf(stderr, "  \x1b[%smcreate with TkpMakeWindow\x1b[00m\n", clr());
 	winPtr->window = TkpMakeWindow(winPtr, parent);
     }
 
@@ -1803,6 +1815,7 @@ Tk_MakeWindowExist(tkwin)
 	winPtr->flags &= ~TK_NEED_CONFIG_NOTIFY;
 	TkDoConfigureNotify(winPtr);
     }
+    fprintf(stderr, "  \x1b[%smTk_MakeWindowExist: done for tkwin=%x\x1b[00m\n", clr(), tkwin);
 }
 
 /*
