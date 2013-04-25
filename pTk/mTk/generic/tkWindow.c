@@ -2537,6 +2537,8 @@ Tk_RestackWindow(tkwin, aboveBelow, other)
 	while ((otherPtr != NULL) && !(otherPtr->flags & TK_TOP_HIERARCHY)) {
 	    otherPtr = otherPtr->parentPtr;
 	}
+        fprintf(stderr, "\x1b[%smTk_RestackWindow: winPtr=%x has TK_WIN_MANAGED, using TkWmRestackToplevel\x1b[00m\n",
+                clr(), (int)winPtr);
 	TkWmRestackToplevel(winPtr, aboveBelow, otherPtr);
 	return TCL_OK;
     }
@@ -2550,6 +2552,7 @@ Tk_RestackWindow(tkwin, aboveBelow, other)
 	 * Window is going to be deleted shortly;  don't do anything.
 	 */
 
+        fprintf(stderr, "\x1b[%smTk_RestackWindow: no-op (being deleted)\x1b[00m\n", clr());
 	return TCL_OK;
     }
     if (otherPtr == NULL) {
@@ -2567,6 +2570,7 @@ Tk_RestackWindow(tkwin, aboveBelow, other)
 	}
     }
     if (otherPtr == winPtr) {
+        fprintf(stderr, "\x1b[%smTk_RestackWindow: no-op (same window)\x1b[00m\n", clr());
 	return TCL_OK;
     }
 
@@ -2595,6 +2599,7 @@ Tk_RestackWindow(tkwin, aboveBelow, other)
 	}
 	winPtr->nextPtr = otherPtr;
     }
+    fprintf(stderr, "\x1b[%smTk_RestackWindow: relinked in stack\x1b[00m\n", clr());
 
     /*
      * Notify the X server of the change.  If winPtr hasn't yet been
@@ -2619,6 +2624,8 @@ Tk_RestackWindow(tkwin, aboveBelow, other)
 		break;
 	    }
 	}
+        fprintf(stderr, "  \x1b[%smXConfigureWindow win=0x%x,0x%x mask=%x ...\x1b[00m\n",
+                clr(), (int)winPtr, (int)winPtr->window, mask);
 	XConfigureWindow(winPtr->display, winPtr->window, mask, &changes);
     }
     return TCL_OK;
