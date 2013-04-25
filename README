@@ -1,3 +1,37 @@
+This "heavy_tracing" branch adds both tracing and sloppiness, it is
+not suitable for merging!
+
+Problems I solved using this tracing,
+
+ 1) in a niche application where a (non-PRIMARY) selection used to
+    carry messages between two X11 clients by bouncing the ownership
+    repeatedly without user interaction, the ICCCM bit us.
+
+    The second call to SelectionOwn will be ignored by the XServer if
+    TkCurrentTime gives the same non-zero value for both calls.  This
+    happens if both are made in the context of a KeyPress, ButtonPress
+    etc.
+
+    The time field on SelectionOwn is not visible through the API.
+
+    Workaround: make the SelectionOwn call after generating and while
+    handling a PropertyNotify, which confers its own timestamp on the
+    execution context.
+
+ 2) in writing automated tests with eventGenerate, the events were
+    getting lost unless (something magic) happened.
+
+    Waiting for the window to be visible was probably enough, but
+    actually the significant event seems to be calling of $widg->id
+
+    8560507c3de0f12e85e93c7456130f93519e9582 causes eventGenerate to
+    reject windows which have no X11 id yet.
+
+
+
+
+------------------------------------------------------------
+
 Tk is a Graphical User Interface ToolKit.
 
 Copyright (c) 1995-2004 Nick Ing-Simmons. All rights reserved.
