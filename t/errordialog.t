@@ -59,11 +59,12 @@ my $collide_count; # not init
 sub collide_errors {
     $mw->afterIdle(sub {
                        $collide_count++;
+                       $mw->afterIdle(sub { $collide_count++; die "$errmsg 4\n" });
                        die "$errmsg 3\n";
                    });
     my $clear_later;
     my $do_clear = sub {
-        return unless $collide_count > 0;
+        return unless $collide_count > 1;
         my $dialog = search_error_dialog($mw);
         my $txt = $dialog->cget('-text'); # -message ?
 
