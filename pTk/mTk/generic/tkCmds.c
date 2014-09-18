@@ -539,6 +539,44 @@ Tk_LowerObjCmd(clientData, interp, objc, objv)
     return TCL_OK;
 }
 
+/** Tk_BreakIdObjCmd - for debug only
+ *
+ * Results: object now has a bad XId
+ *
+ * This is monkey-see-monkey-do code.  It causes segfault later.
+ */
+
+int
+Tk_BreakIdObjCmd(clientData, interp, objc, objv)
+    ClientData clientData;	/* Main window associated with
+				 * interpreter. */
+    Tcl_Interp *interp;		/* Current interpreter. */
+    int objc;			/* Number of arguments. */
+    Tcl_Obj *CONST objv[];	/* Argument objects. */
+{
+    Tk_Window mainwin = (Tk_Window) clientData;
+    Tk_Window tkwin;
+
+    if ((objc != 2) && (objc != 3)) {
+	Tcl_WrongNumArgs(interp, 1, objv, "window ?aboveThis?");
+	return TCL_ERROR;
+    }
+
+    tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[1]), mainwin);
+
+    TkWindow *winPtr = (TkWindow *) tkwin;
+    int oldId, newId;
+    oldId = winPtr->window;
+    newId = oldId + 0x1000;
+    fprintf(stderr, "Breaking window 0x%x at 0x%x. Id was 0x%X, now 0x%X\n",
+            objv[1],
+            winPtr, // assumed 32-bit
+            oldId, newId);
+    fflush(stderr);
+    winPtr->window = newId;
+    return TCL_OK;
+}
+
 /*
  *----------------------------------------------------------------------
  *

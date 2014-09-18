@@ -1,0 +1,46 @@
+#! /usr/bin/env perl
+use strict;
+use warnings;
+use Tk;
+use Try::Tiny;
+use YAML 'Dump';
+
+sub main {
+    my $M = MainWindow->new;
+    my $T = $M->Toplevel;
+    my $w = $T->Label(-text => "wibble")->pack;
+    my $G = $M->Toplevel;
+    $G->destroy;
+
+    $M->property(set => 'MediocreWindow', "STRING", 8, "pid:$$");
+    printf "Good = %s\n", get($M, 'MediocreWindow');
+    printf "Bad  = %s\n", get($T, 'MediocreWindow');
+    printf "Gone = %s\n", get($G, 'MediocreWindow');
+    warn sprintf("w=%s (XId %s), going to breakId it\n", $w, $w->id);
+    $w->breakId;
+    warn sprintf("w=%s (XId %s)\n", $w, $w->id);
+
+    if (1) {
+        $w->raise;
+        MainLoop; # BadWindow delivered, killing the program
+    } else {
+        printf "Boom?= %s\n", get($w, 'MediocreWindow'); # BadWindow caught neatly
+        # "ERR:XError in occured at "...
+        # Then segfault, due to something left untidy..?
+    }
+
+    return 0;
+}
+
+sub get {
+    my ($w, $prop) = @_;
+    return try {
+        $w->property(get => $prop);
+    } catch {
+        my $err = $_;
+        chomp $err;
+        "ERR:$err";
+    };
+}
+
+exit main(@ARGV);
