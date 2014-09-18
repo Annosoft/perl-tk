@@ -1,0 +1,40 @@
+#! /usr/bin/env perl
+use strict;
+use warnings;
+use Cwd 'abs_path';
+
+=head1 NAME
+
+tkhack - bring in a hacked Perl-Tk
+
+=head1 SYNOPSIS
+
+ cd /foo/perl-tk
+ perl Makefile.PL
+ make
+
+ blib/script/tkhack ./myprog
+
+=cut
+
+
+sub main {
+    my @nextprog = @_;
+    my ($base) = $0 =~ m{^(.*)blib/script/tkhack$}
+      or die "Can't get base from $0";
+
+    $base = '.' if $base eq '';
+    $base = abs_path($base);
+
+    die qq{perl-tk not built (with 'make') to \$PERLTK/blib/ ?\nPERLTK=$base}
+      unless -f "$base/blib/arch/auto/Tk/Tk.so";
+
+    $ENV{PERL5LIB} = join ':',
+      (map {"$base/$_"} qw( blib/lib blib/arch )),
+        $ENV{PERL5LIB};
+
+    exec @nextprog;
+    die "exec $nextprog[0] failed: $!";
+}
+
+exit main(@ARGV);

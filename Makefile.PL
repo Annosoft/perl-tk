@@ -67,7 +67,7 @@ delete $dir->{'pTk'};
 
 Tk::MMutil::TkExtMakefile(
     'VERSION'  => $VERSION,
-    'EXE_FILES' => [qw(ptksh ptked gedi)],
+    'EXE_FILES' => [qw(ptksh ptked gedi tkhack)],
     'NAME'     => 'Tk',
     'DIR'      => ['pTk',reverse(sort(keys %$dir))],
     'DISTNAME' => "Tk",
