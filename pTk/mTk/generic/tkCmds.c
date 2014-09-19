@@ -565,15 +565,22 @@ Tk_BreakIdObjCmd(clientData, interp, objc, objv)
     tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[1]), mainwin);
 
     TkWindow *winPtr = (TkWindow *) tkwin;
-    int oldId, newId;
-    oldId = winPtr->window;
-    newId = oldId + 0x1000;
-    fprintf(stderr, "Breaking window 0x%x at 0x%x. Id was 0x%X, now 0x%X\n",
-            objv[1],
-            winPtr, // assumed 32-bit
-            oldId, newId);
-    fflush(stderr);
-    winPtr->window = newId;
+    if (0) {
+      int oldId, newId;
+      oldId = winPtr->window;
+      newId = oldId + 0x1000;
+      fprintf(stderr, "Breaking window 0x%x at 0x%x. Id was 0x%X, now 0x%X\n",
+              objv[1],
+              winPtr, // assumed 32-bit
+              oldId, newId);
+      fflush(stderr);
+      winPtr->window = newId;
+    } else {
+      fprintf(stderr, "Breaking window 0x%x at 0x%x with XDestroyWindow\n",
+              objv[1],
+              winPtr); // assumed 32-bit
+      XDestroyWindow(winPtr->display, winPtr->window);
+    }
     return TCL_OK;
 }
 
