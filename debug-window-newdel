@@ -1,0 +1,101 @@
+#! /usr/bin/env perl
+use strict;
+use warnings;
+
+use Tk;
+use Tk::WindowTrace;
+
+use Try::Tiny;
+
+use YAML 'Dump';
+use Time::HiRes qw( gettimeofday tv_interval );
+
+my $written;
+sub gap {
+    if ($written && tv_interval($written) > 1) {
+        print "\n\n";
+        undef $written;
+    }
+}
+
+sub reporter {
+    my ($wtrace, $infohash) = @_;
+
+    # XEvent sometimes contains memory soup, don't log it
+    (try { delete $infohash->{$_}{raw_XEvent} }) foreach keys %$infohash;
+
+    print Dump($infohash);
+    $written = [ gettimeofday ];
+}
+
+sub main {
+    $|=1;
+    my $M = MainWindow->new;
+
+    my $wtrace = Tk::WindowTrace->new($M);
+    $wtrace->reporter(\&reporter);
+    $wtrace->bind(sub {
+                      my ($ev) = @_;
+
+                      # do not log passwords
+                      delete @{$ev}{qw{ KeyPress KeyRelease }};
+
+                      # dull
+                      delete @{$ev}{qw{ Expose Motion }};
+                  });
+    $M->idletasks;
+
+    $M->repeat(150, \&gap);
+
+    my $T = $M->Toplevel;
+    my $b;
+    $M->after(750, sub { $b = $M->
+      Frame(-borderwidth => 4, -bg => 'red')->pack->
+        Frame(-borderwidth => 4, -bg => 'green')->pack->
+          Button(-text => "poke", -command => sub { $T->destroy })->pack; });
+    my $w = $T->Label(-text => "wibble")->pack;
+    $T->Label(-text => "some longer text, such as might be repeated to make " x 3)->pack;
+    my $G = $M->Toplevel;
+    $G->destroy;
+    warn "\n";
+#    $T->after(450, [ $T, 'destroy' ]);
+    $M->property(set => 'MediocreWindow', "STRING", 8, "pid:$$");
+
+    warn sprintf "Good = %s\n", get($M, 'MediocreWindow');
+    warn sprintf "Bad  = %s\n", get($T, 'MediocreWindow');
+    warn sprintf "Gone = %s\n", get($G, 'MediocreWindow');
+    $w->update;
+    warn sprintf "Good = %s\n", get($M, 'MediocreWindow');
+
+    warn sprintf("w=%s (XId %s), going to breakId it\n", $w, $w->id);
+    $w->breakId;
+    warn sprintf("w=%s (XId %s)\n", $w, $w->id);
+
+    warn sprintf "Boom?= %s\n", get($w, 'MediocreWindow'); # BadWindow caught neatly
+    # "ERR:XError in occured at "...
+
+    if (1) {
+        $w->raise;
+        MainLoop; # BadWindow delivered, killing the program
+    } else {
+        # Then segfault, due to something left untidy..?
+    }
+
+    return 0;
+}
+
+sub get {
+    my ($w, $prop) = @_;
+    return try {
+        $w->property(get => $prop);
+    } catch {
+        my $err = $_;
+        chomp $err;
+        "ERR:$err";
+    };
+}
+
+exit main(@ARGV);
+
+
+
