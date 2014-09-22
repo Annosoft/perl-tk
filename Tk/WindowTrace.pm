@@ -136,9 +136,10 @@ sub __make_report { # not a method
             my $w = $info{$k};
             my %widg =
               (str => "$w",
-               raw_XEvent => $w->XEvent, # see pod/Tcl-perl.pod
+               raw_XEvent => __hexdump(8, ${ $w->XEvent }), # see pod/Tcl-perl.pod
                PathName => $w->PathName,
                XId => (try { scalar $obj->id } catch { "ERR:$_" }));
+            $widg{destroyed} = 'NOT EXISTS' unless Tk::Exists($w);
             foreach my $prop (qw( title text )) {
                 try {
                     my $v = $w->cget("-$prop");
@@ -179,6 +180,20 @@ sub _id_path {
 
     return join ", ", $win->id, $parent->id;
 }
+
+sub __hexdump {
+    my ($step, $data) = @_;
+    my $out = '';
+    for (my $i=0; $i<length($data); $i+=$step) {
+        $out .=
+          sprintf("%4x: %s\n", $i,
+                  join ' ',
+                  map { sprintf("%02x", ord($_)) }
+                  split //, substr($data, $i, $step));
+    }
+    return $out;
+}
+
 
 
 sub reporter {
