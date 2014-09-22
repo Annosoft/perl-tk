@@ -1023,7 +1023,25 @@ TkFindStateNumObj(interp, optionPtr, mapPtr, keyObjPtr)
     return mPtr->numKey;
 }
 
+int
+XGetWindowProperty_LOGGED(// extra args
+                          char* file, int line,
+                          // XGetWindowProperty args
+                          Display *display, Window w, Atom property,
+                          long long_offset, long long_length, Bool delete,
+                          Atom req_type, Atom *actual_type_return,
+                          int *actual_format_return, unsigned long *nitems_return,
+                          unsigned long *bytes_after_return,
+                          unsigned char **prop_return)
+{
+  LangDebug("%s:%d: XGetWindowProperty for atom#%lu of 0x%lx on %s [Last=%lu, next=%lu]\n",
+            file, line,
+            property, w, DisplayString(display),
+            LastKnownRequestProcessed(display), NextRequest(display));
 
-
-
+  return XGetWindowProperty
+    (display, w,  property, long_offset, long_length, delete,
+     req_type, actual_type_return, actual_format_return, nitems_return,
+     bytes_after_return, prop_return);
+}
 

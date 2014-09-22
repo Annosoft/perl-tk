@@ -51,7 +51,7 @@ Window XmuClientWindow (dpy, win)
     WM_STATE = XInternAtom(dpy, "WM_STATE", True);
     if (!WM_STATE)
 	return win;
-    XGetWindowProperty(dpy, win, WM_STATE, 0, 0, False, AnyPropertyType,
+    XGetWindowProperty_LOGGED(__FILE__,__LINE__,  dpy, win, WM_STATE, 0, 0, False, AnyPropertyType,
 		       &type, &format, &nitems, &after, &data);
     if (type)
 	return win;
