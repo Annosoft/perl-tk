@@ -1034,14 +1034,72 @@ XGetWindowProperty_LOGGED(// extra args
                           unsigned long *bytes_after_return,
                           unsigned char **prop_return)
 {
-  LangDebug("%s:%d: XGetWindowProperty for atom#%lu of 0x%lx on %s [Last=%lu, next=%lu]\n",
-            file, line,
-            property, w, DisplayString(display),
-            LastKnownRequestProcessed(display), NextRequest(display));
+  XEvent event;
+  XVirtualEvent *vev = (XVirtualEvent*) &event;
+  int out;
+  char *atomname, *ret_atomname, *prop_atomname = NULL;
+  TkWindow *mwPtr = TkGetMainInfoList() ? TkGetMainInfoList()->winPtr : NULL;
 
-  return XGetWindowProperty
+  atomname = mwPtr ? Tk_GetAtomName(mwPtr, property) : "?lost?";
+  LangDebug("%s:%d: XGetWindowProperty for atom#%lu '%s' of 0x%lx on %s [Last=%lu, next=%lu]%s\n",
+            file, line,
+            property, atomname, w, DisplayString(display),
+            LastKnownRequestProcessed(display), NextRequest(display),
+            (delete ? ", intending to delete" : ""));
+
+  memset(vev, 85, sizeof(event)); // obvious fill, visible in raw_XEvent
+
+  vev->type = VirtualEvent;
+  vev->serial = LastKnownRequestProcessed(display);
+  vev->send_event = 0;
+  vev->display = display;
+
+  // send to mainwindow[0], to ensure it is processed; except at exit
+  vev->event = mwPtr ? mwPtr->window : w;
+
+  // field name misalignment, as XPropertyEvent has the atom here
+  vev->root = property;
+
+  // w should already Exist, ready for XGetWindowProperty.
+  // This is the actual window.  It may not have events bound.
+  vev->subwindow = w;
+
+  vev->time = CurrentTime;
+
+  vev->x = 0x10112313;
+  vev->y = 0x20212223;
+  vev->x_root = 0x30313233;
+  vev->y_root = 0x40414243;
+  vev->state = -1;
+  vev->name = Tk_GetUid("GetPropLog");
+  vev->same_screen = 1;
+
+  Tk_HandleEvent(vev);
+  // Tk_QueueWindowEvent((XEvent *) vev, TCL_QUEUE_HEAD);
+  // LangDebug("  Queued event\n");
+
+  out = XGetWindowProperty
     (display, w,  property, long_offset, long_length, delete,
      req_type, actual_type_return, actual_format_return, nitems_return,
      bytes_after_return, prop_return);
+
+  /** Property dumper - copes with None, STRING and ATOM.  YMMV */
+  ret_atomname = mwPtr ? Tk_GetAtomName(mwPtr, *actual_type_return) : "?lost?";
+  if (strcmp(ret_atomname, "ATOM") == 0 && mwPtr) {
+    prop_atomname = Tk_GetAtomName(mwPtr, ((Atom*)(*prop_return))[0]);
+  }
+
+  if (*actual_type_return == None) {
+    ret_atomname = "None(not found)";
+  }
+
+  LangDebug("  Last serial %lu %s(%d) property #%lu [%ld..%ld; %lu left] of %s*%lu = '%s'\n",
+            LastKnownRequestProcessed(display),
+            (out == Success ? "got" : "FAILED TO GET"), out, property,
+            long_offset, long_offset+long_length-1, *bytes_after_return,
+            ret_atomname, *nitems_return,
+            prop_atomname ? prop_atomname : *prop_return);
+
+  return out;
 }
 

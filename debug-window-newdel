@@ -21,8 +21,15 @@ sub gap {
 sub reporter {
     my ($wtrace, $infohash) = @_;
 
-    # XEvent sometimes contains memory soup, don't log it
-    (try { delete $infohash->{$_}{raw_XEvent} }) foreach keys %$infohash;
+    if ($infohash->{bound} eq '<GetPropLog>') {
+        # a quirk of XPropertyEvent vs. XVirtualEvent, that we put the
+        # atom in the rootwindow field
+        $infohash->{atom} = delete $infohash->{R};
+    } else {
+        # XEvent sometimes contains memory soup from short events,
+        # don't log it
+        (try { delete $infohash->{$_}{raw_XEvent} }) foreach keys %$infohash;
+    }
 
     print Dump($infohash);
     $written = [ gettimeofday ];
@@ -36,6 +43,14 @@ sub main {
     $wtrace->reporter(\&reporter);
     $wtrace->bind(sub {
                       my ($ev) = @_;
+
+                      # new virtual event
+                      $ev->{'<GetPropLog>'} = '#TRSfd@XYiEWh';
+                      # hijacked fields R=atom S=eventwindow 
+                      # hijackable fields s=state @XY=coords
+                      # unknown fields iEWh
+                      # absent fields cwpK
+                      # dull fields t=CurrentTime o m=lookup(name)
 
                       # do not log passwords
                       delete @{$ev}{qw{ KeyPress KeyRelease }};
