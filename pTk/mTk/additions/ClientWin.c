@@ -84,7 +84,7 @@ Window TryChildren (dpy, win, WM_STATE)
     if (!XQueryTree(dpy, win, &root, &parent, &children, &nchildren))
 	return 0;
     for (i = 0; !inf && (i < nchildren); i++) {
-	XGetWindowProperty(dpy, children[i], WM_STATE, 0, 0, False,
+	XGetWindowProperty_LOGGED(__FILE__,__LINE__,  dpy, children[i], WM_STATE, 0, 0, False,
 			   AnyPropertyType, &type, &format, &nitems,
 			   &after, &data);
 	if (type)

@@ -2136,7 +2136,7 @@ TestpropCmd(clientData, interp, argc, argv)
     w = strtoul(argv[1], &end, 0);
     propName = Tk_InternAtom(mainWin, argv[2]);
     property = NULL;
-    result = XGetWindowProperty(Tk_Display(mainWin),
+    result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  Tk_Display(mainWin),
 	    w, propName, 0, 100000, False, AnyPropertyType,
 	    &actualType, &actualFormat, &length,
 	    &bytesAfter, (unsigned char **) &property);
@@ -2234,7 +2234,7 @@ TestsendCmd(clientData, interp, argc, argv)
 	propName = Tk_InternAtom((Tk_Window) winPtr, argv[3]);
 	if (argc == 4) {
 	    property = NULL;
-	    result = XGetWindowProperty(winPtr->dispPtr->display,
+	    result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  winPtr->dispPtr->display,
 		    w, propName, 0, 100000, False, XA_STRING,
 		    &actualType, &actualFormat, &length,
 		    &bytesAfter, (unsigned char **) &property);

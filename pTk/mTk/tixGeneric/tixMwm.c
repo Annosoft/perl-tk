@@ -302,7 +302,7 @@ QueryMwmHints(wmPtr)
 
     wmPtr->prop.flags = MWM_HINTS_DECORATIONS;
 
-    if (XGetWindowProperty(Tk_Display(wmPtr->tkwin),Tk_WindowId(wmPtr->tkwin),
+    if (XGetWindowProperty_LOGGED(__FILE__,__LINE__,  Tk_Display(wmPtr->tkwin),Tk_WindowId(wmPtr->tkwin),
 	wmPtr->mwm_hints_atom, 0, PROP_MWM_HINTS_ELEMENTS,
 	False, wmPtr->mwm_hints_atom, &actualType, &actualFormat, &numItems,
 	&bytesAfter, (unsigned char **) & wmPtr->prop) == Success) {

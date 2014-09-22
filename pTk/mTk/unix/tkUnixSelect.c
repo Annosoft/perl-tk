@@ -623,7 +623,7 @@ TkSelEventProc(tkwin, eventPtr)
 	}
 
 	propInfo = NULL;
-	result = XGetWindowProperty(eventPtr->xselection.display,
+	result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  eventPtr->xselection.display,
 		eventPtr->xselection.requestor, retrPtr->property,
 		0, MAX_PROP_WORDS, False, (Atom) AnyPropertyType,
 		&type, &format, &numItems, &bytesAfter,
@@ -925,14 +925,14 @@ ConvertSelection(winPtr, eventPtr)
 	if (eventPtr->property == None) {
 	    goto refuse;
 	}
-	result = XGetWindowProperty(eventPtr->display,
+	result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  eventPtr->display,
 		eventPtr->requestor, eventPtr->property,
 		0, MAX_PROP_WORDS, False, XA_ATOM,
 		&type, &format, &incr.numConversions, &bytesAfter,
 		(unsigned char **) &incr.multAtoms);
 	if (result == Success && incr.numConversions == 0 && format == 32 &&
 	    type != XA_ATOM && type != None) {
-	    result = XGetWindowProperty(eventPtr->display,
+	    result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  eventPtr->display,
 		eventPtr->requestor, eventPtr->property,
 		0, MAX_PROP_WORDS, False, type,
 		&type, &format, &incr.numConversions, &bytesAfter,
@@ -1226,7 +1226,7 @@ SelRcvIncrProc(clientData, eventPtr)
 	return;
     }
     propInfo = NULL;
-    result = XGetWindowProperty(eventPtr->xproperty.display,
+    result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  eventPtr->xproperty.display,
 	    eventPtr->xproperty.window, retrPtr->property, 0, MAX_PROP_WORDS,
 	    True, (Atom) AnyPropertyType, &type, &format, &numItems,
 	    &bytesAfter, (unsigned char **) &propInfo);

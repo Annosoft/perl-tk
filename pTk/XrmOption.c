@@ -681,7 +681,7 @@ register TkMainInfo *mainPtr;     /* Top-level information about
      int actualFormat;
      unsigned long numItems, bytesAfter;
      Atom actualType;
-     int result = XGetWindowProperty(winPtr->display,
+     int result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  winPtr->display,
                                  RootWindow(winPtr->display, 0),
                                  XA_RESOURCE_MANAGER, 0, 100000,
                                  False, XA_STRING, &actualType, &actualFormat,

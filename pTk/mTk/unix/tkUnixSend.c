@@ -300,7 +300,7 @@ RegOpen(interp, dispPtr, lock)
      * Read the registry property.
      */
 
-    result = XGetWindowProperty(dispPtr->display,
+    result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  dispPtr->display,
 	    RootWindow(dispPtr->display, 0),
 	    dispPtr->registryProperty, 0, MAX_PROP_WORDS,
 	    False, XA_STRING, &actualType, &actualFormat,
@@ -615,7 +615,7 @@ ValidateName(dispPtr, name, commWindow, oldOK)
 
     handler = Tk_CreateErrorHandler(dispPtr->display, -1, -1, -1,
 	    (Tk_ErrorProc *) NULL, (ClientData) NULL);
-    result = XGetWindowProperty(dispPtr->display, commWindow,
+    result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  dispPtr->display, commWindow,
 	    dispPtr->appNameProperty, 0, MAX_PROP_WORDS,
 	    False, XA_STRING, &actualType, &actualFormat,
 	    &length, &bytesAfter, (unsigned char **) &property);
@@ -1391,7 +1391,7 @@ SendEventProc(clientData, eventPtr)
      */
 
     propInfo = NULL;
-    result = XGetWindowProperty(dispPtr->display,
+    result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  dispPtr->display,
 	    Tk_WindowId(dispPtr->commTkwin),
 	    dispPtr->commProperty, 0, MAX_PROP_WORDS, True,
 	    XA_STRING, &actualType, &actualFormat,

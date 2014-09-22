@@ -53,7 +53,7 @@ long unsigned int *sizep;
  int format = 0;
  if (!sizep)
   sizep = &bytes_after;
- XGetWindowProperty(Tk_Display(tkwin), xid, key, 0L, 0L, False,
+ XGetWindowProperty_LOGGED(__FILE__,__LINE__,  Tk_Display(tkwin), xid, key, 0L, 0L, False,
                     AnyPropertyType, &type, &format, &count, sizep, &prop);
  if (prop)
   XFree((char *) prop);
@@ -300,7 +300,7 @@ Tcl_Obj * *args;                        /* Argument strings. */
          Atom type = None;
          unsigned char *prop = NULL;
          unsigned long count = 0;
-         XGetWindowProperty(Tk_Display(tkwin), xid, atom, 0L, size, False,
+         XGetWindowProperty_LOGGED(__FILE__,__LINE__,  Tk_Display(tkwin), xid, atom, 0L, size, False,
                          AnyPropertyType, &type, &format, &count, &size, &prop);
          if (result != TCL_OK)
           Tcl_SprintfResult(interp, "XError occured");

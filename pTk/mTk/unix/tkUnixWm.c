@@ -4106,12 +4106,12 @@ ReparentEvent(
     vRoot = RootWindow(wrapperPtr->display, wrapperPtr->screenNum);
     wmPtr->vRoot = None;
     handler = Tk_CreateErrorHandler(wrapperPtr->display, -1,-1,-1, NULL,NULL);
-    if (((XGetWindowProperty(wrapperPtr->display, wrapperPtr->window,
+    if (((XGetWindowProperty_LOGGED(__FILE__,__LINE__,  wrapperPtr->display, wrapperPtr->window,
 	    Tk_InternAtom((Tk_Window) wrapperPtr, "__WM_ROOT"), 0, (long) 1,
 	    False, XA_WINDOW, &actualType, &actualFormat, &numItems,
 	    &bytesAfter, (unsigned char **) &virtualRootPtr) == Success)
 	    && (actualType == XA_WINDOW))
-	    || ((XGetWindowProperty(wrapperPtr->display, wrapperPtr->window,
+	    || ((XGetWindowProperty_LOGGED(__FILE__,__LINE__,  wrapperPtr->display, wrapperPtr->window,
 	    Tk_InternAtom((Tk_Window) wrapperPtr, "__SWM_ROOT"), 0, (long) 1,
 	    False, XA_WINDOW, &actualType, &actualFormat, &numItems,
 	    &bytesAfter, (unsigned char **) &virtualRootPtr) == Success)
@@ -4326,7 +4326,7 @@ PropertyEvent(
 	unsigned char *propertyValue = 0;
 	long maxLength = 1024;
 
-	if (XGetWindowProperty(
+	if (XGetWindowProperty_LOGGED(__FILE__,__LINE__,  
 		wrapperPtr->display, wrapperPtr->window, _NET_WM_STATE,
 		0l, maxLength, False, XA_ATOM,
 		&actualType, &actualFormat, &numItems, &bytesAfter, 

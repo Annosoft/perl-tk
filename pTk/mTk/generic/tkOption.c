@@ -1606,7 +1606,7 @@ GetDefaultOptions(interp, winPtr)
      */
 
     regProp = NULL;
-    result = XGetWindowProperty(winPtr->display,
+    result = XGetWindowProperty_LOGGED(__FILE__,__LINE__,  winPtr->display,
 	    RootWindow(winPtr->display, 0),
 	    XA_RESOURCE_MANAGER, 0, 100000,
 	    False, XA_STRING, &actualType, &actualFormat,
