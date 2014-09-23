@@ -10,7 +10,8 @@ use Window;
 use Carp qw( longmess );
 use Time::HiRes qw( gettimeofday tv_interval );
 use Try::Tiny;
-
+use IO::File;
+use POSIX ();
 
 sub new {
     my ($pkg, $mainwindow, $show_code) = @_;
@@ -22,6 +23,57 @@ sub new {
 sub mw {
     my ($self) = @_;
     return $self->{mw};
+}
+
+sub print {
+    my ($self, @txt) = @_;
+    print { $self->fh } @txt
+      or die "Failed to write: $!";
+    return;
+}
+
+sub fh {
+    my ($self) = @_;
+    return $self->{_out_fh} || \*STDOUT;
+}
+
+sub compress_to {
+    my ($self, $fn) = @_;
+    die "File $fn: exists already" if -e $fn;
+    my $pid = open my $fh, '|-';
+    if (!defined $pid) {
+        die "Fail to gzip to $fn: $!";
+    } elsif ($pid) {
+        # parent
+        $self->{_out_pid} = $pid;
+        $self->{_out_fh} = $fh;
+        $fh->autoflush(1);
+        return $self;
+    } else {
+        # child
+        try {
+            # want gzip to finish, even if the parent is zapped
+            die "setsid failed" if POSIX::setsid == -1;
+            open STDOUT, '>', $fn
+              or die "write to $fn: $!";
+            exec qw( nice gzip -9 )
+              or die "exec failed: $!";
+        } catch {
+            warn "compress_to subprocess $_";
+            close STDERR; # _exit does not flush
+            close STDOUT;
+        };
+        POSIX::_exit(127); # avoid triggering DESTROY
+    }
+}
+
+sub DESTROY {
+    my ($self) = @_;
+    if (my $fh = $self->fh) {
+        $self->print("\n" x 4); # a YAML-safe EOF mark
+        close $fh or warn "Closing $fh: $!";
+        delete $self->{_out_fh};
+    }
 }
 
 

@@ -27,7 +27,7 @@ sub reporter {
         $infohash->{atom} = delete $infohash->{R};
     }
 
-    print Dump($infohash);
+    $wtrace->print( Dump({ delete $infohash->{wall} => $infohash }) );
     $written = [ gettimeofday ];
 }
 
@@ -36,7 +36,7 @@ sub main {
     my $M = MainWindow->new;
 
     my $wtrace = Tk::WindowTrace->new($M);
-    $wtrace->reporter(\&reporter);
+    $wtrace->compress_to("/tmp/junk.gz")->reporter(\&reporter);
     $wtrace->bind(sub {
                       my ($ev) = @_;
 
