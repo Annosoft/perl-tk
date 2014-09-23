@@ -1085,20 +1085,32 @@ XGetWindowProperty_LOGGED(// extra args
 
   /** Property dumper - copes with None, STRING and ATOM.  YMMV */
   ret_atomname = mwPtr ? Tk_GetAtomName(mwPtr, *actual_type_return) : "?lost?";
-  if (strcmp(ret_atomname, "ATOM") == 0 && mwPtr) {
-    prop_atomname = Tk_GetAtomName(mwPtr, ((Atom*)(*prop_return))[0]);
-  }
-
   if (*actual_type_return == None) {
     ret_atomname = "None(not found)";
   }
 
-  LangDebug("  Last serial %lu %s(%d) property #%lu [%ld..%ld; %lu left] of %s*%lu = '%s'\n",
+  LangDebug("  Last serial %lu %s(%d) property #%lu [%ld..%ld; %lu left] of %s*%lu",
             LastKnownRequestProcessed(display),
             (out == Success ? "got" : "FAILED TO GET"), out, property,
             long_offset, long_offset+long_length-1, *bytes_after_return,
-            ret_atomname, *nitems_return,
-            prop_atomname ? prop_atomname : *prop_return);
+            ret_atomname, *nitems_return);
+  if (strcmp(ret_atomname, "STRING") == 0) {
+    LangDebug(" = '%s'", *prop_return);
+  } else if (strcmp(ret_atomname, "ATOM") == 0) {
+    int i;
+    for (i=0; i<*nitems_return; i++) {
+      Atom a = ((Atom*)(*prop_return))[i];
+      if (mwPtr) {
+        LangDebug("%s#%lu:'%s'",
+                  (i==0 ? " = " : ", "), a,
+                  Tk_GetAtomName(mwPtr, a));
+      } else {
+        LangDebug("%s#%lu",
+                  (i==0 ? " = " : ", "), a);
+      }
+    }
+  } // else...  ah, who cares about the other things
+  LangDebug("\n");
 
   return out;
 }
