@@ -33,6 +33,9 @@ sub main {
       (map {"$base/$_"} qw( blib/lib blib/arch )),
         $ENV{PERL5LIB};
 
+    die "Oops, PERL5OPT already set?!" if defined $ENV{PERL5OPT};
+    $ENV{PERL5OPT} = '-MTk::AutoTrace';
+
     exec @nextprog;
     die "exec $nextprog[0] failed: $!";
 }
