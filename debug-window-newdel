@@ -25,10 +25,6 @@ sub reporter {
         # a quirk of XPropertyEvent vs. XVirtualEvent, that we put the
         # atom in the rootwindow field
         $infohash->{atom} = delete $infohash->{R};
-    } else {
-        # XEvent sometimes contains memory soup from short events,
-        # don't log it
-        (try { delete $infohash->{$_}{raw_XEvent} }) foreach keys %$infohash;
     }
 
     print Dump($infohash);
@@ -45,7 +41,7 @@ sub main {
                       my ($ev) = @_;
 
                       # new virtual event
-                      $ev->{'<GetPropLog>'} = '#TRSfd@XYiEWh';
+                      $ev->{'<GetPropLog>'} = '#TRSfd@XYiEWh hex';
                       # hijacked fields R=atom S=eventwindow 
                       # hijackable fields s=state @XY=coords
                       # unknown fields iEWh

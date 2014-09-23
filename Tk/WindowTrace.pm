@@ -39,6 +39,12 @@ Do the binding, after make changes to the event bind list.
  # log only position of KeyPress
  %replace_ev = (KeyPress => 'XY', KeyRelease => undef);
 
+Values in %ev start with L<Tk:Ev> characters, or C<.> for none; then
+optional space and keywords.
+
+Valid keywords are C<raw> and C<hex> to include the XEvent dump.
+These may contain memory soup from events shorter than struct XEvent.
+
 =cut
 
 sub bind {
@@ -95,16 +101,19 @@ sub bind {
 
     delete $ev{CirculateRequest}; # dnw? "no event type or button # or keysym"
 
-    while (my ($type, $ev) = each %ev) {
-        next unless defined $ev;
-        my @ev = split //, $ev;
+    while (my ($type, $evstr) = each %ev) {
+        next unless defined $evstr;
+        my ($evchr, @evkey) = split / /, $evstr;
+        my @evchr = defined $evchr ? (split //, $evchr) : ();
+        my %evkey = map {( $_ => 1 )} @evkey;
         try {
             $M->bind(all => "<$type>",
                      [ \&__make_report, $self, $type,
-                       map {($_ => Ev("$_"))} @ev]);
+                       keywords => \%evkey,
+                       map {($_ => Ev("$_"))} @evchr]);
         } catch {
             local $" = ",";
-            warn "[w] Couldn't bind <$type> with Ev(@ev): $_";
+            warn "[w] Couldn't bind <$type> with Ev(@evchr): $_";
         };
     }
 
@@ -114,6 +123,8 @@ sub bind {
 
 sub __make_report { # not a method
     my ($obj, $self, $bound, %info) = @_;
+
+    my $kw = delete $info{keywords}; # hashref of (key => 1)
 
     my @t = gettimeofday();
     my @l = localtime($t[0]);
@@ -136,10 +147,14 @@ sub __make_report { # not a method
             my $w = $info{$k};
             my %widg =
               (str => "$w",
-               raw_XEvent => __hexdump(8, ${ $w->XEvent }), # see pod/Tcl-perl.pod
                PathName => $w->PathName,
                XId => (try { scalar $obj->id } catch { "ERR:$_" }));
             $widg{destroyed} = 'NOT EXISTS' unless Tk::Exists($w);
+
+            if ($kw->{hex} || $kw->{raw}) {
+                my $ev = $w->XEvent; # see pod/Tcl-perl.pod
+                $widg{raw_XEvent} = $kw->{hex} ? __hexdump(8, $$ev) : $ev;
+            }
             foreach my $prop (qw( title text )) {
                 try {
                     my $v = $w->cget("-$prop");
