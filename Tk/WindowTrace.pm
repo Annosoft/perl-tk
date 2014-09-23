@@ -54,6 +54,7 @@ sub compress_to {
         try {
             # want gzip to finish, even if the parent is zapped
             die "setsid failed" if POSIX::setsid == -1;
+            close STDOUT; # our STDOUT won't just reOPEN
             open STDOUT, '>', $fn
               or die "write to $fn: $!";
             exec qw( nice gzip -9 )
