@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Cwd 'abs_path';
+use lib ();
 
 =head1 NAME
 
@@ -20,18 +21,21 @@ tkhack - bring in a hacked Perl-Tk
 
 sub main {
     my @nextprog = @_;
-    my ($base) = $0 =~ m{^(.*)blib/script/tkhack$}
-      or die "Can't get base from $0";
+    my $prog = abs_path($0);
 
-    $base = '.' if $base eq '';
-    $base = abs_path($base);
+    my ($base, $inst) = $prog =~ m{^(.*)(blib/script|bin)/tkhack$}
+      or die "Can't get base from $prog";
 
-    die qq{perl-tk not built (with 'make') to \$PERLTK/blib/ ?\nPERLTK=$base}
-      unless -f "$base/blib/arch/auto/Tk/Tk.so";
+    my @add = $inst =~ /blib/ ? qw( blib/arch blib/lib ) : qw( lib/perl5 );
+    @add = map {"$base/$_"} @add;
+    lib->import(@add);
 
-    $ENV{PERL5LIB} = join ':',
-      (map {"$base/$_"} qw( blib/lib blib/arch )),
-        $ENV{PERL5LIB};
+    die qq{perl-tk not found at $INC[0] under base=$base}
+      unless -f "$INC[0]/auto/Tk/Tk.so";
+
+    $ENV{ZMAP_LIB} = join ':', @add;
+    $ENV{PERL5LIB} = join ':', @add,
+      $ENV{PERL5LIB};
 
     die "Oops, PERL5OPT already set?!" if defined $ENV{PERL5OPT};
     $ENV{PERL5OPT} = '-MTk::AutoTrace';
