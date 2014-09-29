@@ -23,6 +23,22 @@ sub laterz {
     return;
 }
 
+sub mend_env {
+    my ($self) = @_;
+
+    # Prevent the tkhack in child Perls
+    my $hackroot = __FILE__;
+    $hackroot =~ s{Tk/AutoTrace\.pm$}{} or die "Can't get root from $hackroot";
+    delete $ENV{PERL5OPT};
+    my $trimdir = $hackroot;
+    $trimdir =~ s{(/*blib)?(/+lib)?(/+arch)?(/+perl5)?/*$}{};
+    while ($ENV{PERL5LIB} =~ s{^(\Q$trimdir\E[^:]*):}{}) {
+        warn "Removed tkhack PERL5LIB entry $1";
+    }
+
+    return;
+}
+
 sub setup {
     my ($self) = @_;
     my $M = $self->{M};
@@ -70,5 +86,6 @@ sub __reporter { # not a method
 }
 
 
+__PACKAGE__->mend_env;
 my $one = __PACKAGE__->new;
 1;
