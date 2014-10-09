@@ -60,16 +60,19 @@ Window XmuClientWindow (dpy, win)
      * ClientMessage{window=0x1}.
      */
 
+    LangDebug("XmuClientWindow(win 0x%x)\n", win);
     handler = Tk_CreateErrorHandler(dpy, -1, -1, -1, (Tk_ErrorProc *) NULL, (ClientData) NULL);
     XGetWindowProperty_LOGGED(__FILE__,__LINE__,  dpy, win, WM_STATE, 0, 0, False, AnyPropertyType,
 		       &type, &format, &nitems, &after, &data);
     if (type) {
+        LangDebug("  has WM_STATE (t=%d)\n", type);
 	inf = win;
     } else {
         inf = TryChildren(dpy, win, WM_STATE);
         if (!inf)
             inf = win;
     }
+    LangDebug("  XmuClientWindow returning inf=0x%x\n", inf);
 
     Tk_DeleteErrorHandler(handler);
     return inf;
@@ -95,9 +98,11 @@ Window TryChildren (dpy, win, WM_STATE)
     unsigned char *data;
     Window inf = 0;
 
+    LangDebug("    TryChildren of win=0x%x\n", win);
     if (!XQueryTree(dpy, win, &root, &parent, &children, &nchildren))
 	return 0;
     for (i = 0; !inf && (i < nchildren); i++) {
+        LangDebug("      child[%d] = win 0x%x\n", i, children[i]);
 	XGetWindowProperty_LOGGED(__FILE__,__LINE__,  dpy, children[i], WM_STATE, 0, 0, False,
 			   AnyPropertyType, &type, &format, &nitems,
 			   &after, &data);
@@ -107,6 +112,7 @@ Window TryChildren (dpy, win, WM_STATE)
     for (i = 0; !inf && (i < nchildren); i++)
 	inf = TryChildren(dpy, children[i], WM_STATE);
     if (children) XFree((char *)children);
+    LangDebug("      TryChildren returning 0x%x\n", inf);
     return inf;
 #endif
 }

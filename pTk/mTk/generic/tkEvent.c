@@ -766,6 +766,14 @@ Tk_HandleEvent(eventPtr)
      * if this is "done right" yet but should be harmless.
      */
     if (winPtr == NULL && eventPtr->type == ClientMessage) {
+        LangDebug("ClientMessage: serial=%d send_event=%d win=0x%x mtype=atom#%d fmt=%d data=0x%x 0x%x 0x%x 0x%x 0x%x\n",
+                  eventPtr->xclient.serial, eventPtr->xclient.send_event, eventPtr->xclient.window,
+                  eventPtr->xclient.message_type, eventPtr->xclient.format,
+                  eventPtr->xclient.data.l[0],
+                  eventPtr->xclient.data.l[1],
+                  eventPtr->xclient.data.l[2],
+                  eventPtr->xclient.data.l[3],
+                  eventPtr->xclient.data.l[4]);
         handlerWindow = XmuClientWindow(eventPtr->xany.display, handlerWindow);
 	winPtr = (TkWindow *) Tk_IdToWindow(eventPtr->xany.display, handlerWindow);
     }
