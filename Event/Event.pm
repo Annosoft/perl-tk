@@ -2,7 +2,7 @@ package Tk::Event;
 use vars qw($VERSION $XS_VERSION @EXPORT_OK);
 END { CleanupGlue() }
 $VERSION = '4.031_001';
-$XS_VERSION = '804.032_500_001';
+$XS_VERSION = '804.032_500_002';
 $XS_VERSION =~ s{_}{};
 use base  qw(Exporter);
 use XSLoader;
